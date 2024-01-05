@@ -9,6 +9,7 @@ import * as archiver from 'archiver';
 import { rimrafSync } from 'rimraf';
 import { CreateFileDto } from 'src/dynamic-file/dto/create-file.dto';
 import { CreateDirDto } from 'src/dynamic-file/dto/create-dir.dto';
+import { MoveDto } from 'src/dynamic-file/dto/move.dto';
 
 @Controller('dynamic-file')
 @ApiTags("dynamic-file")
@@ -99,5 +100,10 @@ export class DynamicFileController {
       ids = [ids];
     }
     return this.dynamicFileService.remove(ids);
+  }
+
+  @Patch("move")
+  move(@Body() dto: MoveDto) {
+    return this.dynamicFileService.move(dto);
   }
 }

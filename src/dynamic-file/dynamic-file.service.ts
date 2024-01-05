@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { In, IsNull, Repository } from 'typeorm';
 import { DynamicFile, DynamicFileTypeEnum } from 'src/dynamic-file/entities/dynamic-file.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateFileDto } from 'src/dynamic-file/dto/create-file.dto';
 import { CreateDirDto } from 'src/dynamic-file/dto/create-dir.dto';
+import { MoveDto } from 'src/dynamic-file/dto/move.dto';
 
 @Injectable()
 export class DynamicFileService {
@@ -71,5 +72,18 @@ export class DynamicFileService {
 
   async isDir(id: number) {
     return await this.dynamicFileRepository.exists({ where: { id: id, type: DynamicFileTypeEnum.DIR } });
+  }
+
+  async move(dto: MoveDto) {
+    if (dto.parent) {
+      if (dto.ids.find(id => id == dto.parent)) {
+        throw new BadRequestException("Cannot move a folder/file to itself");
+      }
+
+      if (!(await this.dynamicFileRepository.exists({ where: { id: dto.parent, type: DynamicFileTypeEnum.DIR } }))) {
+        throw new BadRequestException("Folder is not existed");
+      }
+    }
+    return await this.dynamicFileRepository.update({ id: In(dto.ids) }, { parent: { id: dto.parent ? dto.parent : null } });
   }
 }
